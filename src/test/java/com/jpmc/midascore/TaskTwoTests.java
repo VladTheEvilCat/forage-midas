@@ -1,15 +1,20 @@
 package com.jpmc.midascore;
 
+//import org.apache.kafka.clients.consumer.ConsumerRecord;
+//import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.boot.test.context.SpringBootTest;
 
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
-@DirtiesContext
 @EmbeddedKafka(partitions = 1, brokerProperties = {"listeners=PLAINTEXT://localhost:9092", "port=9092"})
 class TaskTwoTests {
     static final Logger logger = LoggerFactory.getLogger(TaskTwoTests.class);
@@ -34,8 +39,11 @@ class TaskTwoTests {
         logger.info("kill this test once you find the answer");
         while (true) {
             Thread.sleep(20000);
-            logger.info("...");
         }
     }
 
+    @KafkaListener(topics = "${general.kafka-topic}", groupId = "midas-group")
+    public void listen(ConsumerRecord<String, String> record) {
+        logger.info("Received transaction: " + record.value());
+    }
 }
